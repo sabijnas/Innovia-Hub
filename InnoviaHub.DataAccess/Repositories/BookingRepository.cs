@@ -57,7 +57,7 @@ public class BookingRepository(InnoviaHubDbContext context) : IBookingRepository
         return await context.Bookings.AnyAsync(b =>
             b.ResourceId == resourceId &&
             !b.IsCancelled &&
-            (!excludingBookingId.HasValue || b.Id == excludingBookingId.Value) &&
+            (!excludingBookingId.HasValue || b.Id != excludingBookingId.Value) &&
             b.StartTime < endTime &&
             b.EndTime > startTime);
     }

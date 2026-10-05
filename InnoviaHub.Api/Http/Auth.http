@@ -12,8 +12,8 @@ POST {{BASE_URL}}/api/Auth/login
 Content-Type: application/json
 
 {
-  "email": "{{EMAIL}}",
-  "password": "{{PASSWORD}}"
+  "email": "admin@innoviahub.se",
+  "password": "Admin1234!"
 }
 
 ### LOGOUT

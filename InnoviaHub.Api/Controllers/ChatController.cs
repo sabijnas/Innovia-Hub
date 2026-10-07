@@ -41,7 +41,6 @@ namespace InnoviaHub.Api.Controllers
             var body = new
             {
                 model = "gpt-6-astra",
-                
                 input = new object[]
                 {
                     new
@@ -78,7 +77,14 @@ namespace InnoviaHub.Api.Controllers
                 .FirstOrDefault(text => !string.IsNullOrEmpty(text))
                 ?? "Inget svar";
 
-            return Ok(reply);
+            //Retunera objekt som även innehåller resurser istället för bara text
+            return Ok(new
+            {
+                answer = reply,
+                resources = availableResources,
+                startTime = request.StartTime,
+                endTime = request.EndTime
+            });
         }
     }
 }

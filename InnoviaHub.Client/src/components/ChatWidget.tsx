@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
-import { askChat } from "../services/chatService";
+import { askChat, type ChatResponse } from "../services/chatService";
+import { createBooking } from "../services/bookingApiService";
 
 type Message = {
   from: "user" | "assistant";
@@ -10,6 +11,13 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function toUtcIso(dateValue: string, timeValue: string) {
+  const [year, month, day] = dateValue.split("-").map(Number);
+  const [hours, minutes] = timeValue.split(":").map(Number);
+
+  return new Date(year, month - 1, day, hours, minutes).toISOString();
+}
+
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [question, setQuestion] = useState("");
@@ -17,6 +25,7 @@ export default function ChatWidget() {
   const [startTime, setStartTime] = useState("10:00");
   const [endTime, setEndTime] = useState("11:00");
   const [isLoading, setIsLoading] = useState(false);
+  const [chatResponse, setChatResponse] = useState<ChatResponse | null>(null);
   const [message, setMessages] = useState<Message[]>([
     {
       from: "assistant",
@@ -40,18 +49,32 @@ export default function ChatWidget() {
 
     const questionWithTime = `${currentQuestion}
     Sök efter lediga resurser för ${date} mellan ${startTime} och ${endTime}`;
+    const startTimeUtc = toUtcIso(date, startTime);
+    const endTimeUtc = toUtcIso(date, endTime);
 
     try {
       const answer = await askChat({
         question: questionWithTime,
-        startTime: `${date}T${startTime}:00`,
-        endTime: `${date}T${endTime}:00`,
+        startTime: startTimeUtc,
+        endTime: endTimeUtc,
         resourceTypeId: null,
+      });
+
+      const normalizedQuestion = currentQuestion.toLocaleLowerCase("sv-SE");
+
+      const matchingResources = answer.resources.filter((resource) =>
+        normalizedQuestion.includes(resource.name.toLocaleLowerCase("sv-SE")),
+      );
+
+      setChatResponse({
+        ...answer,
+        resources:
+          matchingResources.length > 0 ? matchingResources : answer.resources,
       });
 
       setMessages((current) => [
         ...current,
-        { from: "assistant", text: answer },
+        { from: "assistant", text: answer.answer },
       ]);
     } catch (error) {
       setMessages((current) => [
@@ -63,6 +86,34 @@ export default function ChatWidget() {
       ]);
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function bookResource(resourceId: string) {
+    if (!chatResponse) return;
+
+    try {
+      const booking = await createBooking({
+        resourceId,
+        startTime: chatResponse.startTime,
+        endTime: chatResponse.endTime,
+      });
+
+      setMessages((current) => [
+        ...current,
+        {
+          from: "assistant",
+          text: `Bokningen är skapad för ${booking.resource.name}.`,
+        },
+      ]);
+    } catch {
+      setMessages((current) => [
+        ...current,
+        {
+          from: "assistant",
+          text: "Bokningen kunde inte skapas.",
+        },
+      ]);
     }
   }
 
@@ -138,6 +189,21 @@ export default function ChatWidget() {
               </div>
             ))}
 
+            {(chatResponse?.resources?.length ?? 0) > 0 && (
+              <div className="space-y-2 border-b border-[#1e3347] p-3">
+                {chatResponse?.resources.map((resource) => (
+                  <button
+                    key={resource.id}
+                    type="button"
+                    onClick={() => bookResource(resource.id)}
+                    className="w-full rounded bg-[#00d4aa] px-3 py-2 text-sm font-semibold text-[#080e14] hover:bg-[#00a882]"
+                  >
+                    Boka {resource.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {isLoading && (
               <div className="text-sm text-[#7a94aa]">Skriver...</div>
             )}
@@ -170,7 +236,7 @@ export default function ChatWidget() {
         onClick={() => setIsOpen((current) => !current)}
         className="ml-auto flex h-14 items-center justify-center"
         aria-label="Öppna chatten"
-        style={{cursor: "pointer", fontSize: "2rem"}}
+        style={{ cursor: "pointer", fontSize: "2rem" }}
       >
         💬
       </button>

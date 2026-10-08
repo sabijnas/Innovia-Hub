@@ -81,29 +81,7 @@ npm run dev
 
 Klienten körs normalt på `http://localhost:5173`.
 
-## Vanliga kommandon
-
-```powershell
-# Stoppa databasen
-docker compose down
-
-# Bygg API:t
-dotnet build InnoviaHub.slnx
-
-# Bygg klienten
-npm run build --prefix InnoviaHub.Client
-
-# Kör lint på klienten
-npm run lint --prefix InnoviaHub.Client
-```
-
-Om `dotnet ef` saknas, installera Entity Framework CLI
-
-```powershell
-dotnet tool install --global dotnet-ef
-```
-
-## Testa API:t
-
-HTTP-anrop finns i `InnoviaHub.Api/Http`. De kan köras direkt från VS Code med REST Client-tillägget.
-Eller så kan ni använda er av Scalar/OpenAPI som finns på `http://localhost:5193/scalar` i utvecklingsläge.
+### AI-feature 
+En AI-assitent är implementerad i Innoviahub, den ansvarar för att kunna leta och genomföra bokningar. När användaren skickar en fråga tillsammans med tid och datum skickar frontend en POST-request till controllern. Controllern validerar sedan tidsintervallet och anropar IAvailabilityService för att hitta resurser som är tillängliga. 
+<br>
+AvailabilityService hämtar resurser och bokningar via repositories och kollar om någon bokning överlappar tiden som efterfrågas. Endast aktiva och lediga resurser retuneras. De lediga resurserna serialiseras till JSON och skickas tillsammasn med användarens fråga till AI:n. Backend retunerar både AI:ns svar och listan över tillgängliga resurser till frontend. Resurserna visas som bokningsbara alternativ i chatten. När en använadre väljer en resurs skickas ID samt tidsintervallet till boknings-APIet.

@@ -1,0 +1,9 @@
+POST http://localhost:5193/api/chat
+Content-Type: application/json
+
+{
+    "question": "Finns det något ledigt mötesrum?",
+    "startTime": "2026-10-06T10:00:00Z",
+    "endTime": "2026-10-06T11:00:00Z",
+    "resourceTypeId": null
+}

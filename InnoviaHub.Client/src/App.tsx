@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import BottomNav, { type View } from "./components/BottomNav";
 import ChangePasswordModal from "./components/ChangePasswordModal";
 import { getCurrentUser, logout, type LoginResponse } from "./services/authService";
+import ChatWidget from "./components/ChatWidget";
 
 export default function App() {
   const [view, setView] = useState<View>("login");
@@ -53,6 +54,7 @@ export default function App() {
 
   return (
       <div className="min-h-screen" style={{ background: "#080e14" }}>
+        {user && view !== "login" && !user.mustChangePassword && <ChatWidget />}
         {view !== "login" && (
           <BottomNav
             currentView={view}

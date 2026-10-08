@@ -11,11 +11,25 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
+//Konventerar användarens datum och tid, minskar risken för problem med tidszon
 function toUtcIso(dateValue: string, timeValue: string) {
   const [year, month, day] = dateValue.split("-").map(Number);
   const [hours, minutes] = timeValue.split(":").map(Number);
 
   return new Date(year, month - 1, day, hours, minutes).toISOString();
+}
+
+//Rendera fetmarkerad text i Ai:s svar
+function renderAssistantText(text: string) {
+  return text.split(/(\*\*.*?\*\*)/g).map((part, index) => {
+    const isBold = part.startsWith("**") && part.endsWith("**");
+
+    return isBold ? (
+      <strong key={index}>{part.slice(2, -2)}</strong>
+    ) : (
+      <span key={index}>{part}</span>
+    );
+  });
 }
 
 export default function ChatWidget() {
@@ -185,7 +199,7 @@ export default function ChatWidget() {
                     : "bg-[#111e2d] text-[#e2eaf2]"
                 }`}
               >
-                {message.text}
+                {message.from === "assistant" ? renderAssistantText(message.text) : message.text}
               </div>
             ))}
 

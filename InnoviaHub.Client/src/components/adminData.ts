@@ -16,6 +16,7 @@ export type Sensor = {
 export function useSensors(): {
   sensors: Sensor[];
   error: string | null;
+  clearError: () => void;
 } {
   const [sensors, setSensors] = useState<Sensor[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +51,7 @@ export function useSensors(): {
       }))
     })
   }, [])
-  return {sensors, error};
+  return {sensors, error, clearError: () => setError(null)};
 }
 
 export const adminTabs: { id: AdminTab; label: string; icon: string }[] = [

@@ -1,7 +1,7 @@
 import AdminStatusBadge from "./AdminStatusBadge";
 import type { Sensor } from "./adminData";
 
-export default function AdminSensors({ sensors, error } : {sensors: Sensor[]; error: string | null}) {
+export default function AdminSensors({ sensors } : {sensors: Sensor[]}) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -10,8 +10,6 @@ export default function AdminSensors({ sensors, error } : {sensors: Sensor[]; er
         </h1>
         <span className="text-xs mono" style={{ color: "#7a94aa" }}>Realtid · 10s uppdatering</span>
       </div>
-      {error ? (<p style={{ color: "#f43f5e" }}>{error}</p>)
-      : (
       <div className="grid md:grid-cols-2 gap-4">
         {sensors.map((sensor) => (
           <div key={sensor.id} className="rounded-xl p-4" style={{ background: "#0d1824", border: "1px solid #1e3347" }}>
@@ -34,7 +32,6 @@ export default function AdminSensors({ sensors, error } : {sensors: Sensor[]; er
           </div>
         ))}
       </div>
-    )}
     </div>
   );
 }

@@ -6,7 +6,7 @@ import AdminNavigation from "../components/AdminNavigation";
 import AdminSensors from "../components/AdminSensors";
 import MembersAdmin from "../components/MembersAdmin";
 import ResourcesAdmin from "../components/ResourcesAdmin";
-import { sensors, type AdminTab } from "../components/adminData";
+import { useSensors, type AdminTab } from "../components/adminData";
 import { deleteBooking, getAllBookings, type Booking } from "../services/bookingApiService";
 import { getAllResources, type Resource } from "../services/resourceService";
 
@@ -16,6 +16,7 @@ export default function AdminPage({ onBack, user }: { onBack: () => void; user: 
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingToDelete, setBookingToDelete] = useState<string | null>(null);
   const [resources, setResources] = useState<Resource[]>([]);
+  const { sensors, error: sensorError } = useSensors();
   const alertCount = sensors.filter((sensor) => sensor.status !== "ok").length;
 
   useEffect(() => {
@@ -97,7 +98,7 @@ export default function AdminPage({ onBack, user }: { onBack: () => void; user: 
               occupancyPercentage={occupancyPercentage}
             />
           )}
-          {tab === "sensors" && <AdminSensors />}
+          {tab === "sensors" && (<AdminSensors sensors={sensors} error={sensorError}/>)}
           {tab === "resources" && <ResourcesAdmin />}
           {tab === "members" && <MembersAdmin />}
         </main>

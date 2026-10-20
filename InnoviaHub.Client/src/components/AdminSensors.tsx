@@ -1,15 +1,17 @@
 import AdminStatusBadge from "./AdminStatusBadge";
-import { sensors } from "./adminData";
+import type { Sensor } from "./adminData";
 
-export default function AdminSensors() {
+export default function AdminSensors({ sensors, error } : {sensors: Sensor[]; error: string | null}) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold" style={{ fontFamily: "Outfit, sans-serif", color: "#e2eaf2" }}>
           Sensorövervakning
         </h1>
-        <span className="text-xs mono" style={{ color: "#7a94aa" }}>Realtid · 5s uppdatering</span>
+        <span className="text-xs mono" style={{ color: "#7a94aa" }}>Realtid · 10s uppdatering</span>
       </div>
+      {error ? (<p style={{ color: "#f43f5e" }}>{error}</p>)
+      : (
       <div className="grid md:grid-cols-2 gap-4">
         {sensors.map((sensor) => (
           <div key={sensor.id} className="rounded-xl p-4" style={{ background: "#0d1824", border: "1px solid #1e3347" }}>
@@ -32,6 +34,7 @@ export default function AdminSensors() {
           </div>
         ))}
       </div>
+    )}
     </div>
   );
 }

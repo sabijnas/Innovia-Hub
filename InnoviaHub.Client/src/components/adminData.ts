@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { getSensors, listenToMeasurements } from "../services/iotService";
+
 export type AdminTab = "dashboard" | "sensors" | "resources" | "members";
 
 export type Sensor = {
@@ -10,44 +13,46 @@ export type Sensor = {
   trend: string;
 };
 
-export const sensors: Sensor[] = [
-  {
-    id: "s1",
-    name: "Temperatur – Mötesrum A",
-    value: "22.4°C",
-    status: "ok",
-    location: "Rum A",
-    icon: "🌡",
-    trend: "+0.3°",
-  },
-  {
-    id: "s2",
-    name: "Luftkvalitet – Mötesrum B",
-    value: "CO₂ 412 ppm",
-    status: "ok",
-    location: "Rum B",
-    icon: "💨",
-    trend: "Stabilt",
-  },
-  {
-    id: "s3",
-    name: "Rörelse – Coworking zon A",
-    value: "Aktiv",
-    status: "ok",
-    location: "Zon A",
-    icon: "👁",
-    trend: "9 pers.",
-  },
-  {
-    id: "s4",
-    name: "Elförbrukning – AI-server",
-    value: "3.8 kWh",
-    status: "warn",
-    location: "Serverhall",
-    icon: "⚡",
-    trend: "↑ 12%",
-  },
-];
+export function useSensors(): {
+  sensors: Sensor[];
+  error: string | null;
+  clearError: () => void;
+} {
+  const [sensors, setSensors] = useState<Sensor[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const latest: Record<string, {temp?: number; co2?: number}> = {};
+
+    getSensors().then((loadedSensors) => {
+      if (loadedSensors.length === 0 ) {
+        throw new Error("Inga sensorer hittades");
+      }
+
+      setSensors(loadedSensors);
+      setError(null);
+    })
+    .catch((error) => {
+      console.error(error)
+      setSensors([]);
+      setError("Kunde inte hämta sensorer... Prova att ladda om sidan eller försök igen senare");
+    });
+
+    return listenToMeasurements((m) => {
+      const id = m.deviceId.toLowerCase();
+      const room = (latest[id] ??= {})
+      if (m.type === "temperature") room.temp = m.value;
+      else if (m.type === "co2") room.co2 = m.value;
+
+      setSensors((prev) => prev.map((s) => s.id.toLocaleLowerCase() !== id ? s : {
+        ...s, value: `${room.temp !== undefined ? room.temp.toFixed(1) : "-"}°C · CO₂ ${
+          room.co2 !== undefined ? Math.round(room.co2) : "-"} ppm`,
+          status: "ok"
+      }))
+    })
+  }, [])
+  return {sensors, error, clearError: () => setError(null)};
+}
 
 export const adminTabs: { id: AdminTab; label: string; icon: string }[] = [
   { id: "dashboard", label: "Översikt", icon: "◈" },

@@ -6,7 +6,7 @@ import AdminNavigation from "../components/AdminNavigation";
 import AdminSensors from "../components/AdminSensors";
 import MembersAdmin from "../components/MembersAdmin";
 import ResourcesAdmin from "../components/ResourcesAdmin";
-import { sensors, type AdminTab } from "../components/adminData";
+import { useSensors, type AdminTab } from "../components/adminData";
 import { deleteBooking, getAllBookings, type Booking } from "../services/bookingApiService";
 import { getAllResources, type Resource } from "../services/resourceService";
 
@@ -16,6 +16,7 @@ export default function AdminPage({ onBack, user }: { onBack: () => void; user: 
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingToDelete, setBookingToDelete] = useState<string | null>(null);
   const [resources, setResources] = useState<Resource[]>([]);
+  const { sensors, error: sensorError, clearError: clearSensorError } = useSensors();
   const alertCount = sensors.filter((sensor) => sensor.status !== "ok").length;
 
   useEffect(() => {
@@ -81,7 +82,7 @@ export default function AdminPage({ onBack, user }: { onBack: () => void; user: 
           <AdminNavigation tab={tab} onTabChange={setTab} alertCount={alertCount} />
           <SystemStatus />
         </aside>
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 min-w-0 p-6 pb-32">
           <div className="flex gap-2 mb-6 md:hidden flex-wrap">
             <AdminNavigation tab={tab} onTabChange={setTab} alertCount={alertCount} mobile />
           </div>
@@ -97,7 +98,7 @@ export default function AdminPage({ onBack, user }: { onBack: () => void; user: 
               occupancyPercentage={occupancyPercentage}
             />
           )}
-          {tab === "sensors" && <AdminSensors />}
+          {tab === "sensors" && (<> {sensorError && ( <Alert message={sensorError} type="error" onClose={clearSensorError}/>)}<AdminSensors sensors={sensors}/></>)}
           {tab === "resources" && <ResourcesAdmin />}
           {tab === "members" && <MembersAdmin />}
         </main>
@@ -108,7 +109,7 @@ export default function AdminPage({ onBack, user }: { onBack: () => void; user: 
 
 function AdminHeader({ onBack, user, alertCount }: { onBack: () => void; user: LoginResponse; alertCount: number }) {
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between px-6 py-4" style={{ background: "rgba(8,14,20,0.95)", borderBottom: "1px solid #1e3347", backdropFilter: "blur(16px)" }}>
+    <header className="flex items-center justify-between px-6 py-4" style={{ background: "rgba(8,14,20,0.95)", borderBottom: "1px solid #1e3347" }}>
       <div className="flex items-center gap-4">
         <button onClick={onBack} className="text-sm" style={{ color: "#7a94aa" }}>← Tillbaka</button>
         <div className="w-px h-4" style={{ background: "#1e3347" }} />

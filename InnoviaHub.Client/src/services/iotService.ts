@@ -19,6 +19,19 @@ type Tenant = {
     id: string;
 }
 
+const sensorLocations: Record<string, string> = {
+    "dev-101": "Korridor zon A",
+    "dev-102": "Kontorsyta zon A",
+    "dev-103": "Kontorsyta zon B",
+    "dev-104": "Entré",
+    "dev-105": "Kök",
+    "dev-106": "Lounge zon A",
+    "dev-107": "Lounge zon B",
+    "dev-108": "Korridor zon B",
+    "dev-109": "Korridor zon C",
+    "dev-110": "Kontorsyta zon C",
+}
+
 //Hämtar enheter från DeviceRegistry och gör om till Sensorer
 export async function getSensors(): Promise<Sensor[]> {
     const tenantResponse = await fetch(`${REGISTRY_URL}/api/tenants/by-slug/${TENANT_SLUG}`);
@@ -35,13 +48,14 @@ export async function getSensors(): Promise<Sensor[]> {
         name: x.serial,
         value: "Väntar på data...",
         status: "ok",
-        location: x.model,
+        location: sensorLocations[x.serial.toLocaleLowerCase()] ?? "Okänd plats",
         icon: "🌡",
         trend: "-"
     }));
 }
 
-//Lyssnar på nya värden via singalR, retunerar funktion som stänger anslutning
+/* Lyssnar på nya värden via singalR, retunerar funktion som stänger anslutning 
+när den inte längre behövs */
 export function listenToMeasurements(onMeasurment: (m: { deviceId: string; type: string, value: number}) => void) 
 {
     const connection = new singalR.HubConnectionBuilder()
